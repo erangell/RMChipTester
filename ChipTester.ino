@@ -7,8 +7,9 @@
 int SDPIN = 10;
 int SDconnected = 0; //will get set to 1 if successful connection
 
-String _testDirName;
+String _testDirName= "";
 char _testCmd = ' ';
+int _pinCfgDone = 0;
 int _testParmCtr = 0;
 int _savePinNum = 0;
 
@@ -25,10 +26,6 @@ char pinName[ 192 ] = {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','
 
 byte pinIO[ 8 ] = {0,0,0,0,0,0,0,0}; // bit (pin-1): 0=input 1=output
 
-File fDir;
-File fFile;
-
-int _pinCfgDone = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -97,13 +94,16 @@ void establishContact() {
     Serial.print(".");   // send an initial string
     delay(300);
   }
-  String garbage = Serial.readStringUntil('\n');
-  Serial.println("Received:"+garbage);
-  Serial.println();
+
+  Serial.readStringUntil('\n');
+  
+  //String garbage = Serial.readStringUntil('\n');
+  //Serial.println("Received:"+garbage);
+  //Serial.println();
 }
 
 void printDirectory() {
-  fDir = SD.open("/");
+  File fDir = SD.open("/");
 
   Serial.println(fDir.name());
   Serial.println("Test Directories in root of SD card:");
@@ -130,7 +130,8 @@ void printDirectory() {
 void ReadTestDir(String testDirName)
 {
   int testFileCount = 0;
-  fDir = SD.open(testDirName);
+  File fDir = SD.open(testDirName);
+  File fFile;
   if (!fDir)
   {
     Serial.println("Directory not found");
@@ -165,7 +166,7 @@ void ExecuteTestFile(String testFile, String testFileDir)
   String testFilePath = "/" + testFileDir + "/" + testFile;
   Serial.println("Opening: "+testFilePath);
 
-  fFile = SD.open(testFilePath);
+  File fFile = SD.open(testFilePath);
 
   if (fFile) {
     while (fFile.available()) {
@@ -189,6 +190,13 @@ void ExecuteTestFile(String testFile, String testFileDir)
       String lastparam = csvline.substring(lastcomma+1,csvline.length());
       //Serial.println(lastparam);
       TestParam(lastparam);
+
+      if (command=='P')
+      {
+        //Serial.println("OK to connect power to breadboard now");
+        Serial.println("OK to connect power now");
+        establishContact();
+      }
     }
   }
   else {
@@ -219,10 +227,18 @@ void TestCommand(char c)
           int pinInOut = mode % 2;
           if (pinInUse)
           {
-            Serial.print("Pin in use: ");
-            Serial.println(pinNum);
-            Serial.print("I/O = ");
-            Serial.println(pinInOut);
+            //Serial.print("Pin in use: ");
+            //Serial.println(pinNum);
+            //Serial.print("I/O = ");
+            //Serial.println(pinInOut);
+            if (pinInOut == 0)
+            {
+              pinMode(pinNum,INPUT);
+            }
+            else
+            {
+              pinMode(pinNum,OUTPUT);
+            }
           }
           pinNum ++;
           b = b >> 1;
@@ -277,8 +293,8 @@ void TestParam(String p)
       //for each active pin, set pinmode based on PinIO array.
       if (pinPhase == 0)
       {
-          Serial.print("PinName=");
-          Serial.println(p);
+          //Serial.print("PinName=");
+          //Serial.println(p);
           
           int pnum = -1;
 
@@ -290,15 +306,26 @@ void TestParam(String p)
               break;
             }
           }
-          
-          Serial.print("PinNumber=");
-          Serial.println(pnum);
+
+          _savePinNum = pnum;
 
       }
       else // (pinPhase == 1)
       {
-          Serial.print("PinValue=");
-          Serial.println(p);        
+          //Serial.print("PinNumber=");
+          //Serial.println(_savePinNum);
+
+          //Serial.print("PinValue=");
+          //Serial.println(p);     
+
+          if (p[0]=='1')
+          {
+            digitalWrite(_savePinNum, HIGH);
+          }
+          else
+          {
+            digitalWrite(_savePinNum, LOW);
+          }
       }
       
       /*
@@ -331,6 +358,18 @@ void TestParam(String p)
       */
      break; 
     }    
+    case 'T':
+    {
+      Serial.println("T");
+      break;
+    }
+    case 'E':
+    {
+      
+      Serial.println("E");
+      break;
+    }
+    
   }
    
 }

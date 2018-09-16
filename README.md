@@ -11,16 +11,18 @@ Each test file consists of lines that start with a letter, then contain paramete
 
 Example:
 ```
-M,22,24,26,28,30
-N,VCC,D0,D1,D2,GND
-O,O,I,I,O,O
-P,VCC,1,GND,0
+M,22,D0,O,24,D1,O,26,D2,I
+P,D0,0,D1,0
 ```
 
-* M = pin mappings - the pin numbers on the Arduino that will be used for the tests.
-* N = pin names - names for each of the pins defined by the 'M command
-* O = output or input - whether each pin is to be configured as an output or input
-* P = pin settings - values to be set for specific pins.  In this example the VCC pin is set to logic 1 and the GND pin is set to logic 0.
+* M = pin mappings - sequences of 3 parameters
+  * pin number
+  * pin name to be used in further statements
+  * I or O (input or output pin mode)
+In this example, the Arduino will send two digital outputs from pins 22 and 24 to a logic gate and get a digital input from pin 26 which will be connected to the output of the gate.
+
+* P = pin settings to be done before applying power to your breadboard
+  *  In this example the D0 and D1 outputs (pins 22 and 24) are set to LOW
 
 Test files will typically consist of sequences of the following instructions:
 
