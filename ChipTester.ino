@@ -5,20 +5,30 @@
 
 //Set to pin number used by your SD shield. (Data logger shield=10)
 int SDPIN = 10;
-
 int SDconnected = 0; //will get set to 1 if successful connection
-int testCount = 0;
-int testFileCount = 0;
-String testDirName = "";
-char testCmd = ' ';
-String testParm = "";
-int testState = 0;
-int testParmCtr = 0;
-String testFileName = "";
-//int pinMap[40];
-//String pinName[40];
-//int pinIO[40];
 
+String _testDirName;
+char _testCmd = ' ';
+int _testParmCtr = 0;
+int _savePinNum = 0;
+
+//bit maps: 8 bytes of 8 bits = max 64 pin numbers for arduino mega 
+byte pinMap[ 8 ] = {0,0,0,0,0,0,0,0}; // bit (pin-1) set to 1 if pin is being used
+
+char pinName[ 192 ] = {' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '
+,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '
+,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '
+,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '
+,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '
+,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '
+}; //64 pins * 3 character label for each 
+
+byte pinIO[ 8 ] = {0,0,0,0,0,0,0,0}; // bit (pin-1): 0=input 1=output
+
+File fDir;
+File fFile;
+
+int _pinCfgDone = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -47,9 +57,23 @@ void setup() {
     delay(100);
   }
 
-  testDirName = Serial.readStringUntil('\n');
+  _testDirName = Serial.readStringUntil('\n');
 
-  ReadTestDir(testDirName);
+/*
+  for (int i=0; i<5; i++)
+  {
+    pinMap[i] = 0;
+    pinIO[i] = 0;
+    pinName[i * 3] = ' ';
+    pinName[i *3 + 1] = ' ';
+    pinName[i * 3 + 2] = ' ';
+  }
+  pinMap[5] = 0;
+  pinMap[6] = 0;
+  pinMap[7] = 0;
+  */
+
+  ReadTestDir(_testDirName);
 }
 
 
@@ -64,8 +88,8 @@ void loop() {
       delay(100);
     }
 
-    testFileName = Serial.readStringUntil('\n');
-    ExecuteTestFile( testFileName, testDirName );
+    String testFileName = Serial.readStringUntil('\n');
+    ExecuteTestFile( testFileName, _testDirName );
 }
 
 void establishContact() {
@@ -79,14 +103,13 @@ void establishContact() {
 }
 
 void printDirectory() {
-  File root = SD.open("/");
+  fDir = SD.open("/");
 
-  Serial.println(root.name());
+  Serial.println(fDir.name());
   Serial.println("Test Directories in root of SD card:");
-  testCount = 0;
   while (true) {
 
-    File entry =  root.openNextFile();
+    File entry =  fDir.openNextFile();
     if (! entry) {
       // no more files
       break;
@@ -95,42 +118,41 @@ void printDirectory() {
     if (entry.isDirectory()) {
       if (entry.name()[0]=='T')
       {
-          testCount++;
           Serial.println(entry.name());
       }
     }
     entry.close();
   }
-  root.close();
+  fDir.close();
 }
 
 
 void ReadTestDir(String testDirName)
 {
-  testFileCount = 0;
-  File selectedTestDir = SD.open(testDirName);
-  if (!selectedTestDir)
+  int testFileCount = 0;
+  fDir = SD.open(testDirName);
+  if (!fDir)
   {
     Serial.println("Directory not found");
     return;
   }
-  File testSet;
+  
   while (true) {
-    testSet = selectedTestDir.openNextFile();
-    if (!testSet) {
+    fFile = fDir.openNextFile();
+    if (!fFile) {
       break;
     }
 
-    String testSetFile = testSet.name();
+    String testSetFile = fFile.name();
     if (testSetFile[0] == 'T')
     {
       Serial.println(testSetFile);
       testFileCount++;
     } 
+    fFile.close();
   }
-  testSet.close();
   
-  selectedTestDir.close();
+  fDir.close();
   if (testFileCount == 0)
   {
     Serial.println("No test files found");
@@ -143,11 +165,11 @@ void ExecuteTestFile(String testFile, String testFileDir)
   String testFilePath = "/" + testFileDir + "/" + testFile;
   Serial.println("Opening: "+testFilePath);
 
-  File csvFile = SD.open(testFilePath);
+  fFile = SD.open(testFilePath);
 
-  if (csvFile) {
-    while (csvFile.available()) {
-      csvline = csvFile.readStringUntil('\n');
+  if (fFile) {
+    while (fFile.available()) {
+      csvline = fFile.readStringUntil('\n');
       Serial.println(csvline);
       
       char command = csvline[0];
@@ -170,33 +192,143 @@ void ExecuteTestFile(String testFile, String testFileDir)
     }
   }
   else {
-    Serial.println("ERROR opening "+testFilePath);
+    Serial.println("ExecuteTestFile: ERROR opening "+testFilePath);
   }
-  csvFile.close();
+  fFile.close();
 }
 
 void TestCommand(char c)
 {
-  testCmd = c;
-  testParmCtr = 0;
+  _testCmd = c;
+  _testParmCtr = 0;
+
+  //upon receiving first P command, set Pin I/O configuration
+  
+  if (_testCmd == 'P')
+  {
+    if (_pinCfgDone == 0)
+    {
+      int pinNum = 0;
+      for (int i=0; i<8; i++) 
+      {
+        int b = pinMap[i];
+        int mode = pinIO[i];
+        for (int m=0; m<8; m++)
+        {
+          int pinInUse = b % 2;
+          int pinInOut = mode % 2;
+          if (pinInUse)
+          {
+            Serial.print("Pin in use: ");
+            Serial.println(pinNum);
+            Serial.print("I/O = ");
+            Serial.println(pinInOut);
+          }
+          pinNum ++;
+          b = b >> 1;
+          mode = mode >> 1;        
+        }
+      }
+      _pinCfgDone = 1;
+    }
+  }    
 }
 
 void TestParam(String p)
 {
-  testParm = p;
-  switch (testCmd) {
+  _testParmCtr++;
+
+  int mapPhase = (_testParmCtr - 1) % 3;
+  int pinPhase = (_testParmCtr - 1) % 2;
+  
+  switch (_testCmd) {
     case 'M': {
+      if (mapPhase == 0) // pin number
+      {
+        int parm = p.toInt();
+        int q = parm / 8;
+        int r = parm % 8;
+        int bitmask = 1 << r;
+        pinMap[q] |= bitmask;
+        _savePinNum = parm;
+      }
+      else if (mapPhase == 1) // pin name
+      {
+        int namepos = _savePinNum * 3;
+        pinName[namepos] = p[0];
+        pinName[namepos+1] = p[1];
+        pinName[namepos+2] = p[2];
+      }
+      else // phase == 2 // pin I/O
+      {
+        int q = _savePinNum / 8;
+        int r = _savePinNum % 8;
+       
+        int posbitmask = 1 << r;
+        int negbitmask = posbitmask ^ 255;
+        if (p[0]=='I')
+          pinIO[q] &= negbitmask;
+        else if (p[0]=='O')       
+          pinIO[q] |= posbitmask;
+      }
       break;    
-    }
-    case 'N': {
-      break;
-    }
+    }      
+    case 'P': { //commands to execute before applying power (preconditions)
+      //for each active pin, set pinmode based on PinIO array.
+      if (pinPhase == 0)
+      {
+          Serial.print("PinName=");
+          Serial.println(p);
+          
+          int pnum = -1;
+
+          for (int i=0; i< 64; i++)
+          {
+            if ((p[0] == pinName[i*3])  && (p[1] == pinName[i*3+1]) && (p[2] == pinName[i*3+2]))
+            {
+              pnum = i;
+              break;
+            }
+          }
+          
+          Serial.print("PinNumber=");
+          Serial.println(pnum);
+
+      }
+      else // (pinPhase == 1)
+      {
+          Serial.print("PinValue=");
+          Serial.println(p);        
+      }
       
-    case 'O': {
-      break;
-    }
-      
-    case 'P': {
+      /*
+      Serial.println(p);
+
+      for (int i=0; i<8; i++) {
+        int b = pinMap[i];
+        for (int m=0; m<8; m++)
+        {
+          Serial.print(b%2);
+          b = b >> 1;
+        }
+      }
+      Serial.println();
+
+      for (int j=0; j<192; j++) {
+        Serial.print(pinName[j]);
+      }
+      Serial.println();
+ 
+      for (int k=0; k<8; k++) {
+        int l=pinIO[k];
+        for (int n=0; n<8; n++)
+        {
+          Serial.print(l%2);
+          l = l >> 1;        
+        }
+      }
+      Serial.println();
+      */
      break; 
     }    
   }
