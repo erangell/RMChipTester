@@ -36,6 +36,8 @@ E,D2,1
 * D = delay for a number of milliseconds
 * E = expected results to be verified.  In this case, the D2 pin will be checked for a logical high value.  If any condition on the expected results line fails, the test is considered failed.
 
+Note: Multiple expected results needs to be tested - see issue #1
+
 ## Counting Pulses
 For future development:
 * C = count pulses on specific pins during a specific delay
