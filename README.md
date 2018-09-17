@@ -40,7 +40,7 @@ E,D2,1
 For future development:
 * C = count pulses on specific pins during a specific delay
 
-Sample Test Run in Serial Monitor:
+# Sample Test Run in Serial Monitor:
 ```
 Send........Send one line of text to begin
 .Connecting to SD card
