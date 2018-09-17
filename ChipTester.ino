@@ -12,6 +12,8 @@ char _testCmd = ' ';
 int _pinCfgDone = 0;
 int _testParmCtr = 0;
 int _savePinNum = 0;
+int _testNameFound = 0;
+int _delayval = 1000;
 
 //bit maps: 8 bytes of 8 bits = max 64 pin numbers for arduino mega 
 byte pinMap[ 8 ] = {0,0,0,0,0,0,0,0}; // bit (pin-1) set to 1 if pin is being used
@@ -33,21 +35,21 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
-  Serial.println("Send one line of text to begin:");
+  Serial.println("Send one line of text to begin");
   establishContact();  // send a byte to establish contact until receiver responds
 
-  Serial.print("Connecting to SD card...");
+  Serial.println("Connecting to SD card");
 
   if (!SD.begin(SDPIN)) {
     Serial.println("initialization failed!  Check wiring, if card inserted, and pin to use for your SD shield");
     return;
   }
   SDconnected = 1;
-  Serial.println("initialization done.");
+  Serial.println("initialization done");
 
   printDirectory();
 
-  Serial.println ("Enter name of directory containing tests to run:");  
+  Serial.println ("Enter name of directory containing tests to run");  
 
   while (!Serial.available())
   {
@@ -79,7 +81,7 @@ void loop() {
   if (SDconnected == 0)
     return;
     
-    Serial.println("Enter name of test file to run:");
+    Serial.println("Enter name of test file to run");
     while (!Serial.available())
     {
       delay(100);
@@ -106,7 +108,7 @@ void printDirectory() {
   File fDir = SD.open("/");
 
   Serial.println(fDir.name());
-  Serial.println("Test Directories in root of SD card:");
+  Serial.println("Test Directories in root of SD card");
   while (true) {
 
     File entry =  fDir.openNextFile();
@@ -191,16 +193,20 @@ void ExecuteTestFile(String testFile, String testFileDir)
       //Serial.println(lastparam);
       TestParam(lastparam);
 
+      //removed to save space:
+      /*
       if (command=='P')
       {
         //Serial.println("OK to connect power to breadboard now");
         Serial.println("OK to connect power now");
         establishContact();
-      }
+      }*/
+      _testNameFound = 0;
+      
     }
   }
   else {
-    Serial.println("ExecuteTestFile: ERROR opening "+testFilePath);
+    Serial.println("ERROR opening "+testFilePath);
   }
   fFile.close();
 }
@@ -250,12 +256,56 @@ void TestCommand(char c)
   }    
 }
 
+int getPinNumFromName (String p)
+{
+  int pnum = -1;
+
+  for (int i=0; i< 64; i++)
+  {
+    if ((p[0] == pinName[i*3])  && (p[1] == pinName[i*3+1]) && (p[2] == pinName[i*3+2]))
+    {
+      pnum = i;
+      break;
+    }
+  }
+  return pnum;
+}
+
+void setPinValue (String p)
+{
+  //Serial.print("PinNumber=");
+  //Serial.println(_savePinNum);
+
+  //Serial.print("PinValue=");
+  //Serial.println(p);     
+
+  if (p[0]=='1')
+  {
+    digitalWrite(_savePinNum, HIGH);
+  }
+  else
+  {
+    digitalWrite(_savePinNum, LOW);
+  }
+}
+
+void passTest()
+{
+  Serial.println("PASS");
+}
+
+void failTest()
+{
+  Serial.println("***FAIL***");
+}
+
 void TestParam(String p)
 {
   _testParmCtr++;
 
   int mapPhase = (_testParmCtr - 1) % 3;
   int pinPhase = (_testParmCtr - 1) % 2;
+  int tstPhase = (_testParmCtr) % 2; 
   
   switch (_testCmd) {
     case 'M': {
@@ -292,40 +342,12 @@ void TestParam(String p)
     case 'P': { //commands to execute before applying power (preconditions)
       //for each active pin, set pinmode based on PinIO array.
       if (pinPhase == 0)
-      {
-          //Serial.print("PinName=");
-          //Serial.println(p);
-          
-          int pnum = -1;
-
-          for (int i=0; i< 64; i++)
-          {
-            if ((p[0] == pinName[i*3])  && (p[1] == pinName[i*3+1]) && (p[2] == pinName[i*3+2]))
-            {
-              pnum = i;
-              break;
-            }
-          }
-
-          _savePinNum = pnum;
-
+      {       
+        _savePinNum = getPinNumFromName(p);
       }
       else // (pinPhase == 1)
       {
-          //Serial.print("PinNumber=");
-          //Serial.println(_savePinNum);
-
-          //Serial.print("PinValue=");
-          //Serial.println(p);     
-
-          if (p[0]=='1')
-          {
-            digitalWrite(_savePinNum, HIGH);
-          }
-          else
-          {
-            digitalWrite(_savePinNum, LOW);
-          }
+        setPinValue(p);
       }
       
       /*
@@ -360,17 +382,75 @@ void TestParam(String p)
     }    
     case 'T':
     {
-      Serial.println("T");
+      if (tstPhase == 0)
+      {
+        //Serial.println("Phase 0:"+p);
+        _savePinNum = getPinNumFromName(p);
+        //Serial.print("Pin:");
+        //Serial.println(_savePinNum);
+      }
+      else // tstPhase == 1
+      {
+        if (_testNameFound == 0)
+        {
+          _testNameFound = 1;
+          //Serial.println("TEST NAME: "+p);
+        }
+        else
+        {
+          setPinValue(p);
+        }
+      }
       break;
+    }
+    case 'D':
+    {
+      if (tstPhase == 1)
+      {
+        _delayval = p.toInt();
+        //Serial.print("delay=");
+        //Serial.println(delayval);
+        delay(_delayval);
+      }
     }
     case 'E':
     {
-      
-      Serial.println("E");
+      if (tstPhase == 0)
+      {
+        //Serial.println("Pin:");
+        //Serial.println(_savePinNum);
+        //Serial.println("Expect:"+p);
+        int result = digitalRead(_savePinNum);
+        if (p[0]=='1') // expect HIGH
+        {
+          if (result == 1)
+          {
+            passTest();
+          }
+          else
+          {
+            failTest();
+          }
+        }
+        else // expect LOW
+        {
+          if (result == 0)
+          {
+            passTest();
+          }
+          else
+          {
+            failTest();
+          }
+        }
+        delay(_delayval);
+      }
+      else
+      {
+        _savePinNum = getPinNumFromName(p);
+      }
       break;
     }
-    
-  }
-   
+  }   
 }
 
