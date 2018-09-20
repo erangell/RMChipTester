@@ -15,6 +15,9 @@ M,22,D0,O,24,D1,O,26,D2,I
 P,D0,0,D1,0
 ```
 
+Lines that do not begin with a valid command are ignored, so you may use
+a character like '*' to add comments to your test scripts.
+
 * M = pin mappings - sequences of 3 parameters
   * pin number
   * pin name to be used in further statements
@@ -35,12 +38,15 @@ E,D2,1
 * T = define a named test and the input conditions to be set
 * D = delay for a number of milliseconds
 * E = expected results to be verified.  In this case, the D2 pin will be checked for a logical high value.  If any condition on the expected results line fails, the test is considered failed.
-
-Note: Multiple expected results needs to be tested - see issue #1
+ Multiple expected results may be tested for each E command
 
 ## Counting Pulses
 For future development:
 * C = count pulses on specific pins during a specific delay
+* X = measure time in microseconds until expected result is achieved
+  (ex: set a pin low and measure how long it takes for an output to go high) 
+  This would need both precondition and expected result on same line
+  and would need to do all work after full line is processed and prepared.
 
 # Sample Test Run in Serial Monitor:
 ```

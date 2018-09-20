@@ -291,12 +291,12 @@ void setPinValue (String p)
 
 void passTest()
 {
-  Serial.println("PASS");
+  Serial.println(" PASS");
 }
 
 void failTest()
 {
-  Serial.println("***FAIL***");
+  Serial.println(" FAIL <<<");
 }
 
 void TestParam(String p)
@@ -417,10 +417,13 @@ void TestParam(String p)
     {
       if (tstPhase == 0)
       {
-        //Serial.println("Pin:");
-        //Serial.println(_savePinNum);
+        Serial.print(" P");
+        Serial.print(_savePinNum);
+        Serial.print("=");
+
         //Serial.println("Expect:"+p);
         int result = digitalRead(_savePinNum);
+        Serial.print(result);
         if (p[0]=='1') // expect HIGH
         {
           if (result == 1)
@@ -448,6 +451,7 @@ void TestParam(String p)
       else
       {
         _savePinNum = getPinNumFromName(p);
+        Serial.print(p+":");
       }
       break;
     }
