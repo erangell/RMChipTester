@@ -32,9 +32,9 @@ To execute the test, the Arduino with Data Logger Shield and SD card is hooked
 up to the Apple Internal Game I/O socket as follows:
 
 Apple
-Pin 1 --> +5V
-Pin 8 --> GND
-Pin 15 --> Pin 2
+- Pin 1 --> +5V
+- Pin 8 --> GND
+- Pin 15 --> Pin 2
 
 Test results from an Apple 2+ are in PULSTEST.TXT
 
