@@ -1,11 +1,21 @@
 // Reactive Micro Chip Tester
 // (c) 2018, Reactive Micro.
 
+#include <SPI.h>
 #include <SD.h>
 
-//Set to pin number used by your SD shield. (Data logger shield=10)
-int SDPIN = 10;
+// 2018-09-20: Code modified to work with Arduino Mega, Adafruit SD library, and Data Logger Shield that doesn't have SPI bus header.
+
+//For Arduino Mega, follow these instructions: https://learn.adafruit.com/adafruit-data-logger-shield/for-the-mega-and-leonardo
+//(reverted to original SD libaray)
+const int SSPIN = 53;
+const int spi1 = 10;  // pins needed for SD.begin()
+const int spi2 = 11;
+const int spi3 = 12;
+const int spi4 = 13;
+
 int SDconnected = 0; //will get set to 1 if successful connection
+
 
 String _testDirName= "";
 char _testCmd = ' ';
@@ -40,9 +50,17 @@ void setup() {
 
   Serial.println("Connecting to SD card");
 
-  if (!SD.begin(SDPIN)) {
+  pinMode(SSPIN, OUTPUT); // required for MEGA
+  
+  pinMode(LED_BUILTIN,OUTPUT);
+  digitalWrite(LED_BUILTIN,LOW);  //LED will be lit if any error occurs
+    
+  if (!SD.begin(spi1, spi2, spi3, spi4)) {
     Serial.println("initialization failed!  Check wiring, if card inserted, and pin to use for your SD shield");
-    return;
+    pinMode(LED_BUILTIN,OUTPUT);
+    digitalWrite(LED_BUILTIN,HIGH);
+    // don't do anything more:
+    while (1) ;
   }
   SDconnected = 1;
   Serial.println("initialization done");
@@ -105,7 +123,7 @@ void establishContact() {
 }
 
 void printDirectory() {
-  File fDir = SD.open("/");
+  File fDir = SD.open("/",FILE_READ);
 
   Serial.println(fDir.name());
   Serial.println("Test Directories in root of SD card");
@@ -132,7 +150,14 @@ void printDirectory() {
 void ReadTestDir(String testDirName)
 {
   int testFileCount = 0;
-  File fDir = SD.open(testDirName);
+  char testDirNameStr[255];
+  for (int ix=0; ix < testDirName.length(); ix++)
+  {
+    testDirNameStr[ix] = testDirName[ix];
+  }
+  testDirNameStr[testDirName.length()]='\0';
+
+  File fDir = SD.open(testDirNameStr, FILE_READ);
   File fFile;
   if (!fDir)
   {
@@ -165,10 +190,34 @@ void ReadTestDir(String testDirName)
 void ExecuteTestFile(String testFile, String testFileDir)
 {
   String csvline;
-  String testFilePath = "/" + testFileDir + "/" + testFile;
-  Serial.println("Opening: "+testFilePath);
+  char testFilePath[255];
+  Serial.print("Opening: /");
+  testFilePath[0] = '/';
+  int strpos=0;
+  for (int ix=0; ix<testFileDir.length(); ix++)
+  {
+      testFilePath[ix+1] = testFileDir[ix];
+      Serial.print(testFilePath[ix+1]);
+  }
+  strpos = testFileDir.length() + 1;
+  testFilePath[strpos] = '/';
+  Serial.print(testFilePath[strpos]);
 
-  File fFile = SD.open(testFilePath);
+  for (int ix=0; ix<testFile.length(); ix++)
+  {
+      testFilePath[strpos+ix+1] = testFile[ix];
+      Serial.print(testFilePath[strpos+ix+1]);
+  }
+  strpos += testFile.length()+1;
+  testFilePath[strpos] = '\0';
+  Serial.println(testFilePath[strpos]);
+
+  //DEBUG:
+  //for (int ix=0; ix <= strpos; ix++)
+  //  Serial.print(testFilePath[ix]);
+  //Serial.println("|");
+  
+  File fFile = SD.open(testFilePath, FILE_READ);
 
   if (fFile) {
     while (fFile.available()) {
@@ -206,7 +255,7 @@ void ExecuteTestFile(String testFile, String testFileDir)
     }
   }
   else {
-    Serial.println("ERROR opening "+testFilePath);
+    Serial.println("ERROR opening "+testFile);
   }
   fFile.close();
 }
