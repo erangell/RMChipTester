@@ -1,9 +1,0 @@
-* Set up pin mappings: PIN number, Pin Name, Input or Output
-M,22,D0,O,24,D1,O,26,D2,I
-M,28,D3,O,30,D4,O,32,D5,I
-M,34,D6,O,36,D7,O,38,D8,I
-M,40,D9,O,42,D10,O,44,D11,I
-* Set up initial pin values to be set before applying power
-* Note: Arduino outputs = chip inputs
-P,D0,0,D1,0,D3,0,D4,0
-P,D6,0,D7,0,D9,0,D10,0
