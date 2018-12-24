@@ -1,0 +1,14 @@
+* Pin names from: https://en.wikipedia.org/wiki/MOS_Technology_6522#/media/File:6522_VIA_Pinout.svg  
+* By Crotalus horridus at the English language Wikipedia, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=4440642
+
+M,2,PA0,O,3,PA1,O,4,PA2,O,5,PA3,O,6,PA4,O,7,PA5,0,8,PA6,O,9,PA7,O
+M,52,PB0,O,50,PB1,O,48,PB2,O,46,PB3,O,44,PB4,O,42,PB5,O,40,PB6,O,38,PB7,O
+M,36,CB0,O,34,CB1,O
+M,22,-IR,0,24,RW,O,26,-CE,O,28,CE,O,30,CLK,O
+M,32,D7,O,51,D6,O,49,D5,O,47,D4,O,45,D3,O,43,D2,O,41,D1,O,39,D0,O
+M,37,-RS,O,35,A3,O,33,A2,O,31,A1,O,29,A0,O
+M,27,CA1,O,25,CA0,O
+
+* Data Bus Low
+P,D0,0,D1,0,D3,0,D4,0
+P,D6,0,D7,0,D9,0,D10,0

@@ -497,11 +497,16 @@ void TestParam(String p)
         }
         delay(_delayval);
       }
-      else
+      else // tstPhase != 0
       {
         _savePinNum = getPinNumFromName(p);
         Serial.print(p+":");
       }
+      break;
+    }
+    default:
+    {
+      //Serial.println(" *COMMENT*");
       break;
     }
   }   
