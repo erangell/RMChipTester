@@ -448,6 +448,10 @@ void TestParam(String p)
         else
         {
           setPinValue(p);
+          Serial.print(" Pin:");
+          Serial.print(_savePinNum);
+          Serial.print("<-");
+          Serial.println(p);
         }
       }
       break;

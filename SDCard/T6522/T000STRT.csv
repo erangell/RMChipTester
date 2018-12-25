@@ -1,6 +1,14 @@
 * Pin names from: https://en.wikipedia.org/wiki/MOS_Technology_6522#/media/File:6522_VIA_Pinout.svg  
 * By Crotalus horridus at the English language Wikipedia, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=4440642
 
+* First run this test file with only Arduino connected and no power to the 6522
+* Expected result: all tests pass.
+* Then connect power to the 6522.  It should do a master reset.
+* Expected result: the following tests fail:
+* PA0 thru PA7
+* PB0 thru PB7
+* CB0, CB1, CA1
+
 M,2,PA0,O,3,PA1,O,4,PA2,O,5,PA3,O,6,PA4,O,7,PA5,0,8,PA6,O,9,PA7,O
 M,52,PB0,O,50,PB1,O,48,PB2,O,46,PB3,O,44,PB4,O,42,PB5,O,40,PB6,O,38,PB7,O
 M,36,CB0,O,34,CB1,O
@@ -9,6 +17,44 @@ M,32,D7,O,51,D6,O,49,D5,O,47,D4,O,45,D3,O,43,D2,O,41,D1,O,39,D0,O
 M,37,-RS,O,35,A3,O,33,A2,O,31,A1,O,29,A0,O
 M,27,CA1,O,25,CA0,O
 
-* Data Bus Low
-P,D0,0,D1,0,D3,0,D4,0
-P,D6,0,D7,0,D9,0,D10,0
+* Reset Pin Low
+T,RESET,-RS,0
+D,500
+E,PA0,0
+E,PA1,0
+E,PA2,0
+E,PA3,0
+E,PA4,0
+E,PA5,0
+E,PA6,0
+E,PA7,0
+E,PB0,0
+E,PB1,0
+E,PB2,0
+E,PB3,0
+E,PB4,0
+E,PB5,0
+E,PB6,0
+E,PB7,0
+E,CB0,0
+E,CB1,0
+E,CA0,0
+E,CA1,0
+E,A0,0
+E,A1,0
+E,A2,0
+E,A3,0
+E,D0,0
+E,D1,0
+E,D2,0
+E,D3,0
+E,D4,0
+E,D5,0
+E,D6,0
+E,D7,0
+E,CLK,0
+E,CE,0
+E,-CE,0
+E,RW,0
+E,-IR,0
+
