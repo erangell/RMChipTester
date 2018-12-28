@@ -1,0 +1,266 @@
+* Pin names from: https://en.wikipedia.org/wiki/MOS_Technology_6522#/media/File:6522_VIA_Pinout.svg  
+* By Crotalus horridus at the English language Wikipedia, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=4440642
+
+M,2,PA0,O,3,PA1,O,4,PA2,O,5,PA3,O,6,PA4,O,7,PA5,O,8,PA6,O,9,PA7,O
+M,52,PB0,O,50,PB1,O,48,PB2,O,46,PB3,O,44,PB4,O,42,PB5,O,40,PB6,O,38,PB7,O
+M,36,CB0,I,34,CB1,I
+M,22,-IR,I,24,RW,O,26,-CE,O,28,CE,O,30,CLK,O
+M,32,D7,O,51,D6,O,49,D5,O,47,D4,O,45,D3,O,43,D2,O,41,D1,O,39,D0,O
+M,37,-RS,O,35,A3,O,33,A2,O,31,A1,O,29,A0,O
+M,27,CA1,I,25,CA0,I
+
+* Reset Pin Low: clears all 6522 registers to logic 0
+T,RESETL,-RS,0
+D,500
+
+* Reset Pin High and enable chip for reading
+T,RESETH,-RS,1
+P,CE,1,-CE,0
+P,RW,1
+P,CLK,0
+D,500
+
+* Set ports A and B to 0
+P,PA7,0,PA6,0,PA5,0,PA4,0,PA3,0,PA2,0,PA1,0,PA0,0
+P,PB7,0,PB6,0,PB5,0,PB4,0,PB3,0,PB2,0,PB1,0,PB0,0
+
+* Write $03 to Aux Control Register to enable PA and PB latches
+P,A3,1,A2,0,A1,1,A0,1
+P,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,1,D0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+* Remap data bus to be input to Arduino
+M,32,D7,I,51,D6,I,49,D5,I,47,D4,I,45,D3,I,43,D2,I,41,D1,I,39,D0,I
+
+*Read register 0: IRB
+P,A3,0,A2,0,A1,0,A0,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 1: IRA
+P,A3,0,A2,0,A1,0,A0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 2: DDRB
+P,A3,0,A2,0,A1,1,A0,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 3: DDRA
+P,A3,0,A2,0,A1,1,A0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 4: T1C-L
+P,A3,0,A2,1,A1,0,A0,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 5: T1C-H
+P,A3,0,A2,1,A1,0,A0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 6: T1L-L
+P,A3,0,A2,1,A1,1,A0,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 7: T1L-H
+P,A3,0,A2,1,A1,1,A0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 8: T2C-L
+P,A3,1,A2,0,A1,0,A0,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 9: T2C-H
+P,A3,1,A2,0,A1,0,A0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 10: SR
+P,A3,1,A2,0,A1,1,A0,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 11: ACR
+P,A3,1,A2,0,A1,1,A0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 12: PCR
+P,A3,1,A2,1,A1,0,A0,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 13: IFR
+P,A3,1,A2,1,A1,0,A0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 14: IER
+P,A3,1,A2,1,A1,1,A0,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+*Read register 15: ORA/IRA no handshake
+P,A3,1,A2,1,A1,1,A0,1
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Expect register to have zero
+E,D7,0,D6,0,D5,0,D4,0,D3,0,D2,0,D1,0,D0,0
+
+

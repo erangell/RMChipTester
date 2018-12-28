@@ -1,0 +1,98 @@
+* Pin names from: https://en.wikipedia.org/wiki/MOS_Technology_6522#/media/File:6522_VIA_Pinout.svg  
+* By Crotalus horridus at the English language Wikipedia, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=4440642
+
+* Run T000STRT.csv before this 
+
+M,2,PA0,O,3,PA1,O,4,PA2,O,5,PA3,O,6,PA4,O,7,PA5,O,8,PA6,O,9,PA7,O
+M,52,PB0,O,50,PB1,O,48,PB2,O,46,PB3,O,44,PB4,O,42,PB5,O,40,PB6,O,38,PB7,O
+M,36,CB0,O,34,CB1,O
+M,22,-IR,0,24,RW,O,26,-CE,O,28,CE,O,30,CLK,O
+M,32,D7,O,51,D6,O,49,D5,O,47,D4,O,45,D3,O,43,D2,O,41,D1,O,39,D0,O
+M,37,-RS,O,35,A3,O,33,A2,O,31,A1,O,29,A0,O
+M,27,CA1,O,25,CA0,O
+
+* Reset Pin Low: clears all 6522 registers to logic 0
+T,RESETL,-RS,0
+D,500
+
+* Reset Pin High and enable writing to 6522 registers.
+T,RESETH,-RS,1
+P,CE,1,-CE,0
+D,500
+
+*Set RW to Write mode and initialize clock
+P,RW,0
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+
+*Set Data Direction Register A to read data from chip
+* Write $00 to DDRA Register 3 
+P,A3,0,A2,0,A1,1,A0,1
+P,D0,0,D1,0,D2,0,D3,0,D4,0,D5,0,D6,0,D7,0
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+
+* Write $01 to Aux Control Register to enable PA Latch
+P,A3,1,A2,0,A1,1,A0,1
+P,D0,1,D1,0,D2,0,D3,0,D4,0,D5,0,D6,0,D7,0
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+
+* Redefine data bus pins as inputs to Arduino
+M,32,D7,I,51,D6,I,49,D5,I,47,D4,I,45,D3,I,43,D2,I,41,D1,I,39,D0,I
+
+* setup to read IRA from register 1
+P,A3,0,A2,0,A1,0,A0,1
+P,PA7,1,PA6,0,PA5,1,PA4,0,PA3,1,PA2,0,PA1,1,PA0,0
+
+*Set CA0 to signal that data is ready
+P,CA0,1
+D,500
+
+*Set RW to Read mode.
+P,RW,1
+P,CLK,0
+D,500
+
+*Pulse clock to latch the data
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+*Note: Data on port A can change without impacting the latch
+
+* expect port pins to be set to latched values
+E,D7,1,D6,0,D5,1,D4,0,D3,1,D2,0,D1,1,D0,0
+
+* setup to read IRA from register 1
+P,A3,0,A2,0,A1,0,A0,1
+P,PA7,0,PA6,1,PA5,0,PA4,1,PA3,0,PA2,1,PA1,0,PA0,1
+
+*Set CA0 to signal that data is ready
+P,CA0,1
+D,500
+
+*Pulse clock to latch the data
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+P,CLK,1
+D,500
+P,CLK,0
+D,500
+
+* expect port pins to be set to latched values
+E,D7,0,D6,1,D5,0,D4,1,D3,0,D2,1,D1,0,D0,1
