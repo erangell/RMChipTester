@@ -288,7 +288,7 @@ void TestCommand(char c)
             //Serial.println(pinInOut);
             if (pinInOut == 0)
             {
-              pinMode(pinNum,INPUT);
+              pinMode(pinNum,INPUT_PULLUP);
             }
             else
             {
@@ -309,8 +309,17 @@ int getPinNumFromName (String p)
 {
   int pnum = -1;
 
+  //Serial.print(" DEBUG getPinNumFromName: p=");
+  //Serial.println(p);
+  
   for (int i=0; i< 64; i++)
   {
+    //Serial.print(i);
+    //Serial.print(":");
+    //Serial.print(pinName[i*3]);
+    //Serial.print(pinName[i*3+1]);
+    //Serial.println(pinName[i*3+2]);
+    
     if ((p[0] == pinName[i*3])  && (p[1] == pinName[i*3+1]) && (p[2] == pinName[i*3+2]))
     {
       pnum = i;
@@ -397,6 +406,10 @@ void TestParam(String p)
       else // (pinPhase == 1)
       {
         setPinValue(p);
+        Serial.print(" Pin:");
+        Serial.print(_savePinNum);
+        Serial.print("<=");
+        Serial.println(p);
       }
       
       /*
