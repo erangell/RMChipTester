@@ -55,6 +55,8 @@ P,PA7,1,PA6,0,PA5,1,PA4,0,PA3,1,PA2,0,PA1,1,PA0,0
 *Set CA0 to signal that data is ready
 P,CA0,1
 D,500
+P,CA1,0
+D,500
 
 *Set RW to Read mode.
 P,RW,1
@@ -82,6 +84,8 @@ P,PA7,0,PA6,1,PA5,0,PA4,1,PA3,0,PA2,1,PA1,0,PA0,1
 
 *Set CA0 to signal that data is ready
 P,CA0,1
+D,500
+P,CA1,0
 D,500
 
 *Pulse clock to latch the data
