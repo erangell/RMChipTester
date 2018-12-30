@@ -6,7 +6,7 @@ Commissioned by ReActive Micro, published under MIT License.
 There is a need to test the functionality of batches logic chips to determine if any have errors.
 This sketch allows creation of test harness files on an SD card that can be used by an Arduino to execute tests.
 
-![alt text](https://github.com/erangell/RMChipTester/img/RMChipTester.jpg "Arduino Mega with Data Logger Shield testing a 6522 VIA")
+![Arduino Mega with Data Logger Shield wired to pins of 6522 VIA chip to be tested]( https://github.com/erangell/RMChipTester/tree/master/img/RMChipTester.jpg "Arduino Mega with Data Logger Shield testing a 6522 VIA")
 
 # Test file format
 Each test file consists of lines that start with a letter, then contain parameters separated by commas.  Lines are interpreted in order of the file.
