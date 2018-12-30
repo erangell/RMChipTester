@@ -6,6 +6,8 @@ Commissioned by ReActive Micro, published under MIT License.
 There is a need to test the functionality of batches logic chips to determine if any have errors.
 This sketch allows creation of test harness files on an SD card that can be used by an Arduino to execute tests.
 
+![alt text](https://github.com/erangell/RMChipTester/img/RMChipTester.jpg "Arduino Mega with Data Logger Shield testing a 6522 VIA")
+
 # Test file format
 Each test file consists of lines that start with a letter, then contain parameters separated by commas.  Lines are interpreted in order of the file.
 
@@ -24,7 +26,7 @@ a character like '*' to add comments to your test scripts.
   * I or O (input or output pin mode)
 In this example, the Arduino will send two digital outputs from pins 22 and 24 to a logic gate and get a digital input from pin 26 which will be connected to the output of the gate.
 
-* P = pin settings to be done before applying power to your breadboard
+* P = pin settings (0=LOW, 1=HIGH)
   *  In this example the D0 and D1 outputs (pins 22 and 24) are set to LOW
 
 Test files will typically consist of sequences of the following instructions:
