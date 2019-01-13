@@ -151,12 +151,14 @@ void ReadTestDir(String testDirName)
 {
   int testFileCount = 0;
   char testDirNameStr[255];
+  testDirNameStr[0] = '/';
   for (int ix=0; ix < testDirName.length(); ix++)
   {
-    testDirNameStr[ix] = testDirName[ix];
+    testDirNameStr[ix+1] = testDirName[ix];
   }
-  testDirNameStr[testDirName.length()]='\0';
+  testDirNameStr[testDirName.length()+1]='\0';
 
+  Serial.println(testDirNameStr);
   File fDir = SD.open(testDirNameStr, FILE_READ);
   File fFile;
   if (!fDir)
