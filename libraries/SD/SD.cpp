@@ -434,11 +434,11 @@ File SDClass::open(const char *filepath, uint8_t mode) {
    */
 
   int pathidx;
-
+    
   // do the interative search
   SdFile parentdir = getParentDir(filepath, &pathidx);
   // no more subdirs!
-
+    
   filepath += pathidx;
 
   if (! filepath[0]) {
@@ -451,18 +451,27 @@ File SDClass::open(const char *filepath, uint8_t mode) {
 
   // failed to open a subdir!
   if (!parentdir.isOpen())
-    return File();
+  {
+      Serial.println("ERR in SDClass:open:Parent dir is not open");
+      return File();
+  }
 
   // there is a special case for the Root directory since its a static dir
   if (parentdir.isRoot()) {
     if ( ! file.open(root, filepath, mode)) {
-      // failed to open the file :(
-      return File();
+        // failed to open the file :(
+        Serial.println("ERR in SDClass:open:Failed to open the file (parentdir is root)");
+        Serial.print("filepath=");
+        Serial.print(filepath);
+        return File();
     }
     // dont close the root!
   } else {
     if ( ! file.open(parentdir, filepath, mode)) {
-      return File();
+        Serial.println("ERR in SDClass:open:Failed to open the file (parentdir is NOT root)");
+        Serial.print("filepath=");
+        Serial.print(filepath);
+        return File();
     }
     // close the parent
     parentdir.close();

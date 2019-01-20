@@ -253,7 +253,11 @@ uint8_t SdFile::make83Name(const char* str, uint8_t* name) {
   i = 0;
   while ((c = *str++) != '\0') {
     if (c == '.') {
-      if (n == 10) return false;  // only one dot allowed
+      if (n == 10)
+      {
+          Serial.println ("ERR in make83Name: n==10 only one dot allowed");
+          return false;  // only one dot allowed
+      }
       n = 10;  // max index for full 8.3 name
       i = 8;   // place for extension
     } else {
@@ -261,19 +265,48 @@ uint8_t SdFile::make83Name(const char* str, uint8_t* name) {
       uint8_t b;
 #if defined(__AVR__)
       PGM_P p = PSTR("|<>^+=?/[];,*\"\\");
-      while ((b = pgm_read_byte(p++))) if (b == c) return false;
+      while ((b = pgm_read_byte(p++))) if (b == c)
+      {
+          Serial.print ("ERR in make83Name: illegal AVR character:");
+          Serial.println(c);
+          return false;
+      }
+        
 #elif defined(__arm__)
       const uint8_t valid[] = "|<>^+=?/[];,*\"\\";
       const uint8_t *p = valid;
-      while ((b = *p++)) if (b == c) return false;
+      while ((b = *p++)) if (b == c)
+      {
+          Serial.print ("ERR in make83Name: illegal ARM character:");
+          Serial.println(c);
+          return false;
+      }
 #endif
+        
       // check size and only allow ASCII printable characters
-      if (i > n || c < 0X21 || c > 0X7E)return false;
-      // only upper case allowed in 8.3 names - convert lower to upper
-      name[i++] = c < 'a' || c > 'z' ?  c : c + ('A' - 'a');
+      if (i > n || c < 0X21 || c > 0X7E)
+      {
+          //Serial.print ("ERR in make83Name: non ASCII printable character:");
+          //Serial.println(c);
+          //Serial.print("i=");
+          //Serial.println(i);
+          //Serial.print("n=");
+          //Serial.println(n);
+          
+          //Just skip illegal characters - don't exit
+          //return false;
+      }
+      else {
+          // only upper case allowed in 8.3 names - convert lower to upper
+          name[i++] = c < 'a' || c > 'z' ?  c : c + ('A' - 'a');
+      }
     }
   }
   // must have a file name, extension is optional
+    if (name[0]==' ')
+    {
+        Serial.println("ERR in make83name: name[0]=space");
+    }
   return name[0] != ' ';
 }
 //------------------------------------------------------------------------------
@@ -392,11 +425,20 @@ uint8_t SdFile::makeDir(SdFile* dir, const char* dirName) {
 uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag) {
   uint8_t dname[11];
   dir_t* p;
-
+    
   // error if already open
-  if (isOpen())return false;
-
-  if (!make83Name(fileName, dname)) return false;
+  if (isOpen())
+  {
+      Serial.println("ERR in SdFile: Already Open");
+      return false;
+  }
+    
+  if (!make83Name(fileName, dname))
+  {
+      Serial.println("ERR in SdFile: make83Name failed");
+      return false;
+  }
+    
   vol_ = dirFile->vol_;
   dirFile->rewind();
 

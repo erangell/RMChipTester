@@ -151,19 +151,28 @@ void ReadTestDir(String testDirName)
 {
   int testFileCount = 0;
   char testDirNameStr[255];
-  testDirNameStr[0] = '/';
+  
+  //Pad string with blanks - trying to fix problem with Mac - it was in the 8.3 filename conversion routine
+  for (int ix=0; ix < 255; ix++)
+  {
+      testDirNameStr[ix] = ' ';
+  }
+
   for (int ix=0; ix < testDirName.length(); ix++)
   {
-    testDirNameStr[ix+1] = testDirName[ix];
+      testDirNameStr[ix] = testDirName[ix];
   }
-  testDirNameStr[testDirName.length()+1]='\0';
+  testDirNameStr[testDirName.length()]='\0';
 
+  Serial.print("Test Files In Directory: ");
   Serial.println(testDirNameStr);
+
   File fDir = SD.open(testDirNameStr, FILE_READ);
   File fFile;
   if (!fDir)
   {
     Serial.println("Directory not found");
+    fDir.close();
     return;
   }
   
@@ -187,6 +196,7 @@ void ReadTestDir(String testDirName)
   {
     Serial.println("No test files found");
   }
+
 }
 
 void ExecuteTestFile(String testFile, String testFileDir)
