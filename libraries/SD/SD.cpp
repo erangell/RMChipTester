@@ -462,7 +462,7 @@ File SDClass::open(const char *filepath, uint8_t mode) {
         // failed to open the file :(
         Serial.println("ERR in SDClass:open:Failed to open the file (parentdir is root)");
         Serial.print("filepath=");
-        Serial.print(filepath);
+        Serial.println(filepath);
         return File();
     }
     // dont close the root!
@@ -470,7 +470,7 @@ File SDClass::open(const char *filepath, uint8_t mode) {
     if ( ! file.open(parentdir, filepath, mode)) {
         Serial.println("ERR in SDClass:open:Failed to open the file (parentdir is NOT root)");
         Serial.print("filepath=");
-        Serial.print(filepath);
+        Serial.println(filepath);
         return File();
     }
     // close the parent
